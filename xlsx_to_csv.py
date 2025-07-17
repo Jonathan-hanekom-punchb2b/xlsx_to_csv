@@ -158,20 +158,45 @@ def convert_xlsx_to_csv(xlsx_file, output_dir=None):
 
 def main():
     parser = argparse.ArgumentParser(description='Convert XLSX files to CSV, handling corrupted files with millions of empty cells')
-    parser.add_argument('xlsx_file', help='Path to the XLSX file')
+    parser.add_argument('xlsx_files', nargs='+', help='Path(s) to the XLSX file(s)')
     parser.add_argument('-o', '--output', help='Output directory (default: same as input file)')
     
     args = parser.parse_args()
     
-    if not os.path.exists(args.xlsx_file):
-        print(f"Error: File {args.xlsx_file} not found")
-        return
+    # Process each file
+    successful_conversions = 0
+    failed_conversions = 0
     
-    try:
-        convert_xlsx_to_csv(args.xlsx_file, args.output)
-        print("Conversion completed successfully!")
-    except Exception as e:
-        print(f"Error during conversion: {e}")
+    for xlsx_file in args.xlsx_files:
+        print(f"\n{'='*60}")
+        print(f"Processing: {xlsx_file}")
+        print('='*60)
+        
+        if not os.path.exists(xlsx_file):
+            print(f"❌ Error: File {xlsx_file} not found")
+            failed_conversions += 1
+            continue
+        
+        try:
+            convert_xlsx_to_csv(xlsx_file, args.output)
+            print(f"✅ Successfully converted: {xlsx_file}")
+            successful_conversions += 1
+        except Exception as e:
+            print(f"❌ Error converting {xlsx_file}: {e}")
+            failed_conversions += 1
+    
+    # Summary
+    print(f"\n{'='*60}")
+    print(f"CONVERSION SUMMARY")
+    print('='*60)
+    print(f"✅ Successful: {successful_conversions}")
+    print(f"❌ Failed: {failed_conversions}")
+    print(f"📁 Total files processed: {len(args.xlsx_files)}")
+    
+    if successful_conversions > 0:
+        print(f"\n🎉 All CSV files saved successfully!")
+    if failed_conversions > 0:
+        print(f"\n⚠️  {failed_conversions} file(s) had errors - check messages above")
 
 if __name__ == "__main__":
     main()
